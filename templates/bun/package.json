@@ -1,0 +1,19 @@
+{
+  "name": "scaffscript-compiler",
+  "version": "0.1.1",
+  "description": "A ScaffScript compiler",
+  "license": "MIT",
+  "author": "Undervolta",
+  "type": "module",
+  "private": true,
+  "devDependencies": {
+    "@scaffscript/core": "^0.1.5",
+    "@types/bun": "latest"
+  },
+  "bin": {
+    "scaff": "./dist/index.cjs"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  }
+}
