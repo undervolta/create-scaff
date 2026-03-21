@@ -18,7 +18,6 @@ async function getInput(message) {
   });
   const answer = await rl.question(`\x1B[35m[INPUT]\x1B[0m  ${message}\x1B[34m`);
   rl.close();
-  console.log("\x1B[0m");
   return answer.trim();
 }
 
@@ -42,9 +41,10 @@ async function parseArgs(...args) {
       return null;
     const newProject = await getInput("Create new GameMaker project? \x1B[90m(y/N)\x1B[0m -> ");
     if (newProject.toLowerCase() === "y") {
-      projectName = await getProjectName();
-      if (!projectName)
-        return null;
+      const lastName = targetPath.split("/").pop();
+      projectName = await getProjectName(lastName);
+      if (!projectName || projectName === "")
+        projectName = lastName;
       ideVersion = await getIDEVersion();
       if (!ideVersion)
         return null;
@@ -71,7 +71,7 @@ async function parseArgs(...args) {
       return null;
   }
   if (!projectName && (options.includes("--new") || options.includes("-n"))) {
-    projectName = await getProjectName();
+    projectName = await getProjectName(targetPath.split("/").pop());
     if (!projectName)
       return null;
   }
@@ -88,20 +88,15 @@ async function parseArgs(...args) {
   };
 }
 async function getTemplate() {
-  const res = await getInput("Package manager \x1B[90m(bun/pnpm/NPM)\x1B[0m: ") ?? "npm";
-  if (!["bun", "pnpm", "npm"].includes(res)) {
+  const res = (await getInput("Package manager \x1B[90m(bun/pnpm/NPM)\x1B[0m: ")).toLowerCase();
+  if (!["bun", "pnpm", "npm", ""].includes(res)) {
     log.error(`Invalid template: \x1B[33m${res}\x1B[0m. Please specify a valid template (\x1B[32mbun\x1B[0m, \x1B[32mpnpm\x1B[0m, or \x1B[32mnpm\x1B[0m). Aborting...`);
     return null;
   }
-  return res;
+  return res !== "" ? res : "npm";
 }
-async function getProjectName() {
-  const res = await getInput("GameMaker project name: ");
-  if (!res) {
-    log.error("No project name specified. Please specify a valid project name for the new GameMaker project (\x1B[32m-t=<project_name>\x1B[0m). Aborting...");
-    return null;
-  }
-  return res;
+async function getProjectName(defaultName) {
+  return await getInput(`GameMaker project name \x1B[90m(${defaultName})\x1B[0m: `);
 }
 async function getIDEVersion() {
   const res = await getInput("GameMaker IDE version: ");
@@ -112,13 +107,71 @@ async function getIDEVersion() {
   return res;
 }
 
+// src/fs.ts
+import { cp, mkdir } from "fs/promises";
+import { dirname, join, resolve } from "path";
+import { fileURLToPath } from "url";
+var __filename2 = fileURLToPath(import.meta.url);
+var __dirname2 = dirname(__filename2);
+async function copyTemplate(source, target) {
+  try {
+    const sourceDir = join(__dirname2, "../templates", source);
+    const targetDir = resolve(target);
+    await cp(sourceDir, targetDir, {
+      recursive: true,
+      force: true,
+      errorOnExist: false
+    });
+    return true;
+  } catch (error) {
+    log.error(`Failed to copy template: ${error}`);
+    return false;
+  }
+}
+
+// src/init.ts
+import { spawn } from "child_process";
+async function installDependencies(template, targetDir) {
+  try {
+    spawn(template, ["install"], {
+      cwd: targetDir,
+      stdio: "inherit",
+      shell: true
+    });
+    return true;
+  } catch (error) {
+    log.error(`Failed to install dependencies: ${error}`);
+    return false;
+  }
+}
+async function initializeGit(targetDir) {
+  try {
+    spawn("git", ["init"], {
+      cwd: targetDir,
+      stdio: "inherit",
+      shell: true
+    });
+    return true;
+  } catch (error) {
+    log.error(`Failed to initialize Git repository: ${error}`);
+    return false;
+  }
+}
+
 // src/index.ts
 log.info("Initializing ScaffScript project...");
 var args = process.argv.slice(2);
 var input = await parseArgs(...args);
 if (!input)
   process.exit(1);
+var copied = await copyTemplate(`../templates/${input.template}`, input.targetPath);
+var installed = await installDependencies(input.template, input.targetPath);
+if (input.initGit) {
+  const initGit = await initializeGit(input.targetPath);
+  if (!initGit)
+    process.exit(1);
+}
+if (!copied || !installed)
+  process.exit(1);
 log.info("ScaffScript project initialized successfully.");
-console.log("---");
-log.info("You can now use \x1B[32mscaff <command> [args]\x1B[0m. Use \x1B[32mscaff help\x1B[0m for more information.");
-console.log(JSON.stringify(input, null, 2));
+log.info(`You can now use \x1B[32m${input.template} run <script> -- <command> [args]\x1B[0m. Use \x1B[32m${input.template} run help\x1B[0m for more information.`);

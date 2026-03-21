@@ -16,6 +16,10 @@
     "superset",
     "module"
   ],
+  "files": [
+    "bin",
+    "templates"
+  ],
   "devDependencies": {
     "@types/bun": "latest"
   },

@@ -5,33 +5,42 @@ import type { TemplateType } from "./types";
 /**
  * Install dependencies for a template
  * @param template Template type
+ * @param targetDir Target directory
  * @returns Promise that resolves when the dependencies are installed
  */
-export function installDependencies(template: TemplateType) {
+export async function installDependencies(template: TemplateType, targetDir: string) {
 	try {
-		switch (template) {
-			case "bun":
-				spawn("bun", ["install"], {
-					stdio: "inherit"
-				});
-			break;
-
-			case "pnpm":
-				spawn("pnpm", ["install"], {
-					stdio: "inherit"
-				});
-			break;
-
-			case "npm":
-				spawn("npm", ["install"], {
-					stdio: "inherit"
-				});
-			break;
-		}
+		spawn(template, ["install"], {
+			cwd: targetDir,
+			stdio: "inherit",
+			shell: true
+		});
 
 		return true;
-	} catch (error) {
+	} 
+	catch (error) {
 		log.error(`Failed to install dependencies: ${error}`);
+		return false;
+	}
+}
+
+/**
+ * Initialize a new Git repository
+ * @param targetDir Target directory
+ * @returns Promise that resolves when the repository is initialized
+ */
+export async function initializeGit(targetDir: string) {
+	try {
+		spawn("git", ["init"], {
+			cwd: targetDir,
+			stdio: "inherit",
+			shell: true
+		});
+
+		return true;
+	} 
+	catch (error) {
+		log.error(`Failed to initialize Git repository: ${error}`);
 		return false;
 	}
 }
