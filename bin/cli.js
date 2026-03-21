@@ -108,11 +108,14 @@ async function getIDEVersion() {
 }
 
 // src/fs.ts
-import { cp, mkdir } from "fs/promises";
+import { cp, mkdir, access, rename, readFile, writeFile } from "fs/promises";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
 var __filename2 = fileURLToPath(import.meta.url);
 var __dirname2 = dirname(__filename2);
+async function fileExists(path) {
+  return access(path).then(() => true).catch(() => false);
+}
 async function copyTemplate(source, target) {
   try {
     const sourceDir = join(__dirname2, "../templates", source);
@@ -122,9 +125,38 @@ async function copyTemplate(source, target) {
       force: true,
       errorOnExist: false
     });
+    const gitIgnorePath = join(__dirname2, "../templates/.gitignore");
+    if (!await fileExists(join(targetDir, ".gitignore")))
+      await cp(gitIgnorePath, join(targetDir, ".gitignore"));
+    else {
+      log.warn(`\x1B[34m.gitignore\x1B[0m file already exists in the target directory. Please add \x1B[32mnode_modules\x1B[0m and \x1B[32m.out\x1B[0m to the existing \x1B[34m.gitignore\x1B[0m file.`);
+    }
     return true;
   } catch (error) {
     log.error(`Failed to copy template: ${error}`);
+    return false;
+  }
+}
+async function copyGameMakerProject(target, projectName, ideVersion) {
+  try {
+    const sourceDir = join(__dirname2, "../templates", "gamemaker");
+    const targetDir = resolve(target);
+    await cp(sourceDir, targetDir, {
+      recursive: true,
+      force: true,
+      errorOnExist: false
+    });
+    await rename(`${targetDir}/BLANK.yyp`, `${targetDir}/${projectName}.yyp`);
+    await rename(`${targetDir}/BLANK.resource_order`, `${targetDir}/${projectName}.resource_order`);
+    const yypContent = await readFile(`${targetDir}/${projectName}.yyp`, "utf8");
+    const newYypContent = yypContent.replace(/{PROJECT_NAME}/g, projectName).replace(/{IDE_VERSION}/g, ideVersion);
+    await writeFile(`${targetDir}/${projectName}.yyp`, newYypContent);
+    const room1Content = await readFile(`${targetDir}/rooms/Room1/Room1.yy`, "utf8");
+    const newRoom1Content = room1Content.replace(/{PROJECT_NAME}/g, projectName);
+    await writeFile(`${targetDir}/rooms/Room1/Room1.yy`, newRoom1Content);
+    return true;
+  } catch (error) {
+    log.error(`Failed to copy GameMaker project: ${error}`);
     return false;
   }
 }
@@ -159,19 +191,25 @@ async function initializeGit(targetDir) {
 }
 
 // src/index.ts
-log.info("Initializing ScaffScript project...");
-var args = process.argv.slice(2);
-var input = await parseArgs(...args);
-if (!input)
-  process.exit(1);
-var copied = await copyTemplate(`../templates/${input.template}`, input.targetPath);
-var installed = await installDependencies(input.template, input.targetPath);
-if (input.initGit) {
-  const initGit = await initializeGit(input.targetPath);
-  if (!initGit)
+async function main() {
+  log.info("Initializing ScaffScript project...");
+  const args = process.argv.slice(2);
+  const input = await parseArgs(...args);
+  if (!input)
     process.exit(1);
+  const copied = await copyTemplate(`../templates/${input.template}`, input.targetPath);
+  const installed = await installDependencies(input.template, input.targetPath);
+  if (input.initGit) {
+    const initGit = await initializeGit(input.targetPath);
+    if (!initGit)
+      process.exit(1);
+  }
+  if (input.projectName && input.ideVersion) {
+    await copyGameMakerProject(input.targetPath, input.projectName, input.ideVersion);
+  }
+  if (!copied || !installed)
+    process.exit(1);
+  log.info("ScaffScript project initialized successfully.");
+  log.info(`You can now use \x1B[32m${input.template} run <script> -- <command> [args]\x1B[0m. Use \x1B[32m${input.template} run help\x1B[0m for more information.`);
 }
-if (!copied || !installed)
-  process.exit(1);
-log.info("ScaffScript project initialized successfully.");
-log.info(`You can now use \x1B[32m${input.template} run <script> -- <command> [args]\x1B[0m. Use \x1B[32m${input.template} run help\x1B[0m for more information.`);
+main();
