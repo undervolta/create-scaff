@@ -24,7 +24,7 @@
     "@types/bun": "latest"
   },
   "bin": {
-    "create-scaff": "./dist/cli.js"
+    "create-project": "dist/cli.js"
   },
   "scripts": {
     "build": "bun build src/index.ts --outfile dist/cli.js --target node"
