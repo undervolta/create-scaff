@@ -33,10 +33,19 @@ export async function copyTemplate(source: string, target: string): Promise<bool
 			errorOnExist: false
 		});
 
-		const gitIgnorePath = join(__dirname, "../templates/.gitignore");
+		const targetSrcDir = join(targetDir, "src");
+		await cp(join(__dirname, "../templates/src"), targetSrcDir, {
+			recursive: true,
+			force: true,
+			errorOnExist: false
+		});
+
+		const gitIgnorePath = join(__dirname, "../templates/gitignore");
 		
-		if (!(await fileExists(join(targetDir, ".gitignore"))))
-			await cp(gitIgnorePath, join(targetDir, ".gitignore"));
+		if (!(await fileExists(join(targetDir, ".gitignore")))) {
+			await cp(gitIgnorePath, join(targetDir, "gitignore"));
+			await rename(join(targetDir, "gitignore"), join(targetDir, ".gitignore"));
+		}
 		else {
 			log.warn(`\x1b[34m.gitignore\x1b[0m file already exists in the target directory. Please add \x1b[32mnode_modules\x1b[0m and \x1b[32m.out\x1b[0m to the existing \x1b[34m.gitignore\x1b[0m file.`);
 		}

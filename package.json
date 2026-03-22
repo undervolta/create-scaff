@@ -1,7 +1,7 @@
 {
-  "name": "create-scaffscript",
+  "name": "@scaffscript/create-project",
   "description": "ScaffScript project initializer",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "main": "src/index.ts",
   "module": "src/index.ts",
   "type": "module",
@@ -17,17 +17,17 @@
     "module"
   ],
   "files": [
-    "bin",
+    "dist",
     "templates"
   ],
   "devDependencies": {
     "@types/bun": "latest"
   },
   "bin": {
-    "create-scaffscript": "./bin/cli.js"
+    "create-scaff": "./dist/cli.js"
   },
   "scripts": {
-    "build": "bun build src/index.ts --outfile bin/cli.js --target node"
+    "build": "bun build src/index.ts --outfile dist/cli.js --target node"
   },
   "peerDependencies": {
     "typescript": "^5"

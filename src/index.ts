@@ -10,8 +10,8 @@ async function main() {
 	const args = process.argv.slice(2);
 	const input = await parseArgs(...args);
 	
-	if (!input) 
-		process.exit(1);
+	if (!input)
+		return null;
 	
 	const copied = await fs.copyTemplate(`../templates/${input.template}`, input.targetPath);
 	const installed = await installDependencies(input.template, input.targetPath);
@@ -20,7 +20,7 @@ async function main() {
 		const initGit = await initializeGit(input.targetPath);
 	
 		if (!initGit)
-			process.exit(1);
+			return null;
 	}
 
 	if (input.projectName && input.ideVersion) {
@@ -28,10 +28,15 @@ async function main() {
 	}
 	
 	if (!copied || !installed)
-		process.exit(1);
-	
-	log.info("ScaffScript project initialized successfully.");
-	log.info(`You can now use \x1b[32m${input.template} run <script> -- <command> [args]\x1b[0m. Use \x1b[32m${input.template} run help\x1b[0m for more information.`);
+		return null;
+
+	return input;
 }
 
-main();
+const input = await main();
+
+if (!input)
+	process.exit(1);
+
+log.info("ScaffScript project initialized successfully.");
+log.info(`You can now use \x1b[32m${input.template} run <script> -- <command> [args]\x1b[0m. Use \x1b[32m${input.template} run help\x1b[0m for more information.`);
