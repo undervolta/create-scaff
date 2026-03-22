@@ -31,5 +31,9 @@
   },
   "peerDependencies": {
     "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/cross-spawn": "^6.0.6",
+    "cross-spawn": "^7.0.6"
   }
 }

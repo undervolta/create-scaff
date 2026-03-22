@@ -1,6 +1,23 @@
 import { log } from "./utils";
-import { spawn } from "child_process";
+import spawn from "cross-spawn";
 import type { TemplateType } from "./types";
+
+function runSpawn(cmd: string, targetDir: string, args: string | string[]) {
+	return new Promise((resolve, reject) => {
+		console.log("\x1b[0m");
+		
+		const child = spawn(cmd, Array.isArray(args) ? args : [args], {
+			cwd: targetDir,
+			stdio: "inherit"
+		});
+
+		child.on("error", reject);
+		child.on("close", code => {
+			if (code === 0) resolve(true);
+			else reject(new Error(`Install failed with exit code ${code}`));
+		});
+	});
+}
 
 /**
  * Install dependencies for a template
@@ -10,12 +27,7 @@ import type { TemplateType } from "./types";
  */
 export async function installDependencies(template: TemplateType, targetDir: string) {
 	try {
-		spawn(template, ["install"], {
-			cwd: targetDir,
-			stdio: "inherit",
-			shell: true
-		});
-
+		await runSpawn(template, targetDir, "install");
 		return true;
 	} 
 	catch (error) {
@@ -31,12 +43,7 @@ export async function installDependencies(template: TemplateType, targetDir: str
  */
 export async function initializeGit(targetDir: string) {
 	try {
-		spawn("git", ["init"], {
-			cwd: targetDir,
-			stdio: "inherit",
-			shell: true
-		});
-
+		await runSpawn("git", targetDir, "init");
 		return true;
 	} 
 	catch (error) {
