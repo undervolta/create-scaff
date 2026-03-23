@@ -1,6 +1,6 @@
 {
   "name": "scaffscript-compiler",
-  "version": "0.1.2",
+  "version": "{COMPILER_VERSION}",
   "description": "A ScaffScript compiler",
   "license": "MIT",
   "author": "Undervolta",
@@ -11,6 +11,6 @@
     "scaff": "scaff"
   },
   "devDependencies": {
-    "@scaffscript/core": "^0.1.5"
+    "@scaffscript/core": "{LATEST_VERSION}"
   }
 }

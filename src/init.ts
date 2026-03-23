@@ -51,3 +51,14 @@ export async function initializeGit(targetDir: string) {
 		return false;
 	}
 }
+
+/**
+ * Get the latest version of ScaffScript
+ * @returns Promise that resolves to the latest version
+ */
+export async function getLatestVersion() {
+  const res = await fetch(`https://registry.npmjs.org/@scaffscript/core/latest`);
+  const data = await res.json() as Record<string, any>;
+  
+  return data.version as string;
+}

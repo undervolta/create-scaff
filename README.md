@@ -1,6 +1,9 @@
 # @scaffscript/create-project
 
-A CLI tool for initializing a new ScaffScript project.
+A CLI tool for initializing a new **ScaffScript** project.
+
+> [!WARNING]
+> This project is still in early development. The syntax and features are subject to change. Use at your own risk.
 
 ## Usage
 
