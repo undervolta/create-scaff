@@ -11,7 +11,7 @@
     "@types/bun": "latest"
   },
   "scripts": {
-    "generate": "scaff gen ./src to ./my-game.yyp",
+    "generate": "scaff gen ./src ./my-game.yyp",
     "help": "scaff help",
     "scaff": "scaff"
   },
