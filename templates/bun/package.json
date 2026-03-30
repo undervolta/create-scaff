@@ -1,7 +1,7 @@
 {
-  "name": "scaffscript-compiler",
+  "name": "scaffscript-runner",
   "version": "{COMPILER_VERSION}",
-  "description": "A ScaffScript compiler",
+  "description": "A ScaffScript project runner",
   "license": "MIT",
   "author": "Undervolta",
   "type": "module",
