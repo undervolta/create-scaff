@@ -6,7 +6,7 @@
   "author": "Undervolta",
   "type": "commonjs",
   "scripts": {
-    "generate": "scaff gen ./src ./my-game.yyp",
+    "generate": "scaff gen ./my-game.yyp",
     "help": "scaff help",
     "scaff": "scaff"
   },

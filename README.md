@@ -5,14 +5,18 @@ A CLI tool for initializing a new **ScaffScript** project.
 > [!WARNING]
 > This project is still in early development. The syntax and features are subject to change. Use at your own risk.
 
+## Documentation
+
+For more information, please refer to the official [documentation](https://scaffscript.lefinitas.com).
+
 ## Usage
 
 ```bash
-bun create @scaffscript/project
+bun create @scaffscript/project@latest
 
-npm create @scaffscript/project
+npm create @scaffscript/project@latest
 
-pnpm create @scaffscript/project
+pnpm create @scaffscript/project@latest
 ```
 
 ## Installation (Development)
