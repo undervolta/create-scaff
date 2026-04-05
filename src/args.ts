@@ -46,7 +46,7 @@ export async function parseArgs(...args: string[]): Promise<CLIResult | null> {
 		const git = await getInput("Initialize a new Git repository? \x1b[90m(y/N)\x1b[0m -> ");
 		if (git.toLowerCase() === "y")
 			initGit = true;
-
+		
 		return {
 			targetPath,
 			ideVersion,

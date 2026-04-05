@@ -1,17 +1,16 @@
 {
   "name": "scaffscript-runner",
-  "version": "{COMPILER_VERSION}",
+  "version": "{RUNNER_VERSION}",
   "description": "A ScaffScript project runner",
   "license": "MIT",
   "author": "Undervolta",
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@scaffscript/core": "{LATEST_VERSION}",
     "@types/bun": "latest"
   },
   "scripts": {
-    "generate": "scaff gen ./my-game.yyp",
+    "generate": "scaff gen {GAME_NAME}",
     "help": "scaff help",
     "scaff": "scaff"
   },

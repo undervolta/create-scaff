@@ -2,6 +2,7 @@ import { log } from "./utils";
 import { cp, mkdir, access, rename, readFile, writeFile } from "fs/promises";
 import { dirname, join, resolve } from "path";
 import { fileURLToPath } from "url";
+import { type TemplateType, RUNNER_VERSION } from "./types";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -22,16 +23,16 @@ export async function fileExists(path: string): Promise<boolean> {
  * @param targetDir Target directory
  * @returns Promise that resolves when the template is copied
  */
-export async function copyTemplate(source: string, target: string): Promise<boolean> {
+export async function copyTemplate(template: TemplateType, source: string, target: string, projectName: string | null): Promise<boolean> {
 	try {
 		const sourceDir = join(__dirname, "../templates", source);
 		const targetDir = resolve(target);
 
-		await cp(sourceDir, targetDir, {
+		/*await cp(sourceDir, targetDir, {
 			recursive: true,
 			force: true,
 			errorOnExist: false
-		});
+		});*/
 
 		const targetSrcDir = join(targetDir, "src");
 		await cp(join(__dirname, "../templates/src"), targetSrcDir, {
@@ -40,15 +41,33 @@ export async function copyTemplate(source: string, target: string): Promise<bool
 			errorOnExist: false
 		});
 
-		const gitIgnorePath = join(__dirname, "../templates/gitignore");
+		const templatePath = join(__dirname, "../templates");
+		const gitIgnorePath = join(templatePath, "gitignore");
+		const tgPackagePath = join(targetDir, "package.json");
 		
 		if (!(await fileExists(join(targetDir, ".gitignore")))) {
-			await cp(gitIgnorePath, join(targetDir, "gitignore"));
-			await rename(join(targetDir, "gitignore"), join(targetDir, ".gitignore"));
+			await cp(gitIgnorePath, join(targetDir, ".gitignore"));
 		}
 		else {
 			log.warn(`\x1b[34m.gitignore\x1b[0m file already exists in the target directory. Please add \x1b[32mnode_modules\x1b[0m and \x1b[32m.out\x1b[0m to the existing \x1b[34m.gitignore\x1b[0m file.`);
 		}
+
+		if (template === "bun") {
+			await cp(join(templatePath, "pkg-bun"), tgPackagePath);
+			await cp(join(templatePath, "scaff.config.ts"), join(targetDir, "scaff.config.ts"));
+			await cp(join(templatePath, "tsconfig.json"), join(targetDir, "tsconfig.json"));
+		} else {
+			await cp(join(templatePath, "pkg-npm"), tgPackagePath);
+			await cp(join(templatePath, "scaff.config.cjs"), join(targetDir, "scaff.config.cjs"));
+		}
+
+		const pkg = (await readFile(tgPackagePath, "utf8"))
+			.replace("{RUNNER_VERSION}", RUNNER_VERSION)
+			.replace("{GAME_NAME}", projectName 
+				? (!projectName.includes(' ') ? `./${projectName}.yyp` : `'./${projectName}.yyp'`) 
+				: "./my-game.yyp");
+	
+		await writeFile(tgPackagePath, pkg);
 
 		return true;
 	} 

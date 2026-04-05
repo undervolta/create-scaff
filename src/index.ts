@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 import { log } from "./utils";
 import { parseArgs } from "./args";
-import { readFile, writeFile } from "node:fs/promises";
 import * as fs from "./fs";
-import { installDependencies, initializeGit, getLatestVersion } from "./init";
-
-const COMPILER_VERSION = "0.1.3";
+import { installDependencies, initializeGit } from "./init";
 
 async function main() {
 	log.info("Initializing ScaffScript project...");
@@ -16,14 +13,8 @@ async function main() {
 	if (!input)
 		process.exit(1);
 	
-	const copied = await fs.copyTemplate(`../templates/${input.template}`, input.targetPath);
-
-	const latestVersion = await getLatestVersion();
-	const pkg = (await readFile(`${input.targetPath}/package.json`, "utf8"))
-		.replace("{LATEST_VERSION}", latestVersion)
-		.replace("{COMPILER_VERSION}", COMPILER_VERSION);
-	await writeFile(`${input.targetPath}/package.json`, pkg);
-
+	const copied = await fs.copyTemplate(input.template, `../templates/${input.template}`, input.targetPath, input.projectName);
+	
 	const installed = await installDependencies(input.template, input.targetPath);
 	
 	if (input.initGit) {

@@ -2,11 +2,11 @@ import { log } from "./utils";
 import spawn from "cross-spawn";
 import type { TemplateType } from "./types";
 
-function runSpawn(cmd: string, targetDir: string, args: string | string[]) {
+function runSpawn(cmd: string, targetDir: string, args: string[]) {
 	return new Promise((resolve, reject) => {
 		console.log("\x1b[0m");
 		
-		const child = spawn(cmd, Array.isArray(args) ? args : [args], {
+		const child = spawn(cmd, args, {
 			cwd: targetDir,
 			stdio: "inherit"
 		});
@@ -27,7 +27,11 @@ function runSpawn(cmd: string, targetDir: string, args: string | string[]) {
  */
 export async function installDependencies(template: TemplateType, targetDir: string) {
 	try {
-		await runSpawn(template, targetDir, "install");
+		switch (template) {
+			case "bun": await runSpawn("bun", targetDir, ["add", "@scaffscript/core@latest"]); break;
+			case "pnpm": await runSpawn("pnpm", targetDir, ["add", "@scaffscript/core@latest"]); break;
+			default: await runSpawn("npm", targetDir, ["install", "@scaffscript/core@latest"]);
+		}
 		return true;
 	} 
 	catch (error) {
@@ -43,7 +47,7 @@ export async function installDependencies(template: TemplateType, targetDir: str
  */
 export async function initializeGit(targetDir: string) {
 	try {
-		await runSpawn("git", targetDir, "init");
+		await runSpawn("git", targetDir, ["init"]);
 		return true;
 	} 
 	catch (error) {
@@ -57,8 +61,8 @@ export async function initializeGit(targetDir: string) {
  * @returns Promise that resolves to the latest version
  */
 export async function getLatestVersion() {
-  const res = await fetch(`https://registry.npmjs.org/@scaffscript/core/latest`);
-  const data = await res.json() as Record<string, any>;
-  
-  return data.version as string;
+	const res = await fetch(`https://registry.npmjs.org/@scaffscript/core/latest`);
+	const data = await res.json() as Record<string, any>;
+	
+	return data.version as string;
 }
