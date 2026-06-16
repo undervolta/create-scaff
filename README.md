@@ -2,12 +2,15 @@
 
 A CLI tool for initializing a new **ScaffScript** project.
 
+> [!IMPORTANT]
+> This project is archived due to the author quitting the use of GameMaker.
+
 > [!WARNING]
 > This project is still in early development. The syntax and features are subject to change. Use at your own risk.
 
 ## Documentation
 
-For more information, please refer to the official [documentation](https://scaffscript.lefinitas.com).
+For more information, please refer to the official [documentation](https://scaffscript-docs.netlify.app/).
 
 ## Usage
 
